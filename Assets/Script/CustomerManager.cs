@@ -7,62 +7,72 @@ public class CustomerManager : MonoBehaviour
 {
     public CustomerQueue[] wayPoints;
     public Transform spawnPoint;
-  
+
     //Object Pooling
     public Customer customerPrefab;
     private ObjectPool<Customer> customerPool;
     public int poolSize = 10;
-    
-    public int inQueueCustomerCount = 3;
+
     public List<Customer> inQueueCustomers;
+
     private void Awake()
     {
         inQueueCustomers = new List<Customer>();
+       
         customerPool = new ObjectPool<Customer>(customerPrefab, poolSize, transform);
-        StartCoroutine(SpawnCustomer());
+
+        SpawnCustomer();
+    }
+
+    private void SpawnCustomer()
+    {
+        for (int i = 0; inQueueCustomers.Count < 3; i++)
+        {
+            Customer newCustomer = customerPool.GetObject();
+
+            newCustomer.customerManager = this;
+
+            newCustomer.transform.position = spawnPoint.position;
+
+            newCustomer.gameObject.SetActive(true);
+
+            inQueueCustomers.Add(newCustomer);
+        }
 
         SelectWayPoint();
     }
 
-    private IEnumerator SpawnCustomer()
-    {
-        for (int i = 0; i < inQueueCustomerCount; i++)
-        {
-            if (inQueueCustomers.Count < inQueueCustomerCount)
-            {
-                SpawnCustomerDelay();
-                yield return new WaitForSeconds(1f);
-            }
-        }
-    }
-
-    private void SpawnCustomerDelay()
-    {
-        Customer newCustomer = customerPool.GetObject();
-        newCustomer.customerManager = this;
-        newCustomer.transform.position = spawnPoint.position;
-        newCustomer.gameObject.SetActive(true);
-        inQueueCustomers.Add(newCustomer);
-    }
-
     public void SelectWayPoint()
     {
-        for (int i = 0; i < wayPoints.Length; i++)
+        foreach (var point in wayPoints)
         {
-            if (!wayPoints[i].isQueueBusy && inQueueCustomers.Count > 0)
+            if (!point.isQueueBusy)
             {
-                Customer selectedCustomer = inQueueCustomers[0];
-                inQueueCustomers.RemoveAt(0);
+                for (int i = 0; i < inQueueCustomers.Count; i++)
+                {
+                    Debug.Log(i);
+                    if (!inQueueCustomers[i].updatedNewPoint)
+                    {
+                        inQueueCustomers[i].Move(point.transform);
+                      
+                        inQueueCustomers[i].updatedNewPoint = true;
 
-                wayPoints[i].customer = selectedCustomer;
-                wayPoints[i].customer.Move(wayPoints[i].transform.position);
+                        break;
+                    }
+                }
 
-                wayPoints[i].isQueueBusy = true;
+                point.isQueueBusy = true; // Move this line outside the inner loop
             }
         }
     }
 
-    // Example of how to despawn a customer and return it to the pool
+
+    public void SelectTask()
+    {
+
+    }
+
+
     private void DespawnCustomer(Customer customer)
     {
         customer.gameObject.SetActive(false);

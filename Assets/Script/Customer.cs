@@ -6,7 +6,8 @@ public class Customer : MonoBehaviour
     public CustomerManager customerManager;
     private NavMeshAgent navMeshAgent;
     public bool reachedDestination;
-    public Vector3 destination;
+    public Transform destination;
+    public bool updatedNewPoint;
 
     private void Awake()
     {
@@ -25,26 +26,14 @@ public class Customer : MonoBehaviour
         }
     }
 
-    public void Move(Vector3 _destination)
+    public void Move(Transform _destination)
     {
         destination = _destination;
 
-        destination.y = transform.position.y;
+        //destination.position.y = transform.position.y;
         
-        navMeshAgent.SetDestination(destination);
+        navMeshAgent.SetDestination(destination.position);
        
         reachedDestination = false;
-    }
-
-    public void SelectTask()
-    {
-        foreach (var customerTask in CustomerTaskManager.CustomerTask)
-        {
-            if (customerTask.isAvailable)
-            {
-                Move(customerTask.TargetWayPoint.position);
-                customerTask.isAvailable = false;
-            }
-        }
     }
 }

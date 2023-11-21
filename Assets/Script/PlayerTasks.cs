@@ -49,7 +49,7 @@ public class PlayerTasks : MonoBehaviour
         {
             Instantiate(money, moneySlots[selectMoneySlot]);
             selectMoneySlot++;
-            CustomerQueue.customer.SelectTask();
+           //CustomerQueue.customer.SelectTask();
         }
     }
 }
